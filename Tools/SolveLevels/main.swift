@@ -5,13 +5,10 @@ let rootPath = CommandLine.arguments.dropFirst().first ?? "CatLogicMansion/GameD
 let rootURL = URL(fileURLWithPath: rootPath, relativeTo: URL(fileURLWithPath: FileManager.default.currentDirectoryPath))
 let decoder = JSONDecoder()
 
-let levelURLs = (FileManager.default.enumerator(at: rootURL, includingPropertiesForKeys: nil)?
-    .compactMap { $0 as? URL }
-    .filter { $0.lastPathComponent.hasPrefix("level_") && $0.pathExtension == "json" }
-    .sorted { $0.path < $1.path }) ?? []
+let levelURLs = indexedLevelURLs(rootURL: rootURL)
 
 guard !levelURLs.isEmpty else {
-    fputs("No level JSON files found under \(rootURL.path)\n", stderr)
+    fputs("No indexed level JSON files found under \(rootURL.path)\n", stderr)
     exit(1)
 }
 
@@ -21,15 +18,15 @@ for url in levelURLs {
     do {
         let level = try decoder.decode(Level.self, from: Data(contentsOf: url))
 
-        guard let clearSolution = LevelSolver.solve(level, goal: .clear, maxMoves: 80) else {
+        guard let clearSolution = LevelSolver.solve(level, goal: .clear, maxMoves: 100, maxStates: 500_000) else {
             failureCount += 1
-            print("FAIL \(url.lastPathComponent): no clear route within 80 moves")
+            print("FAIL \(url.lastPathComponent): no clear route within 100 moves")
             continue
         }
 
-        guard let threeStarSolution = LevelSolver.solve(level, goal: .threeStar, maxMoves: 80) else {
+        guard let threeStarSolution = LevelSolver.solve(level, goal: .threeStar, maxMoves: 100, maxStates: 500_000) else {
             failureCount += 1
-            print("FAIL \(url.lastPathComponent): clear route found, but no 3-star route within 80 moves")
+            print("FAIL \(url.lastPathComponent): clear route found, but no 3-star route within 100 moves")
             print("  clear: \(format(solution: clearSolution))")
             continue
         }
@@ -53,4 +50,33 @@ print("\nSolved \(levelURLs.count) level file(s).")
 private func format(solution: LevelSolution) -> String {
     let route = solution.moves.map(\.description).joined(separator: " ")
     return "\(solution.result.moves) moves, \(solution.result.stars) star(s), route: \(route)"
+}
+
+private func indexedLevelURLs(rootURL: URL) -> [URL] {
+    let chapterURLs = chapterIndexURLs(rootURL: rootURL)
+
+    return chapterURLs.flatMap { indexURL -> [URL] in
+        do {
+            let index = try decoder.decode(ChapterIndex.self, from: Data(contentsOf: indexURL))
+            let chapterDirectory = indexURL.deletingLastPathComponent()
+            return index.levels.map { chapterDirectory.appendingPathComponent($0) }
+        } catch {
+            return []
+        }
+    }
+}
+
+private func chapterIndexURLs(rootURL: URL) -> [URL] {
+    let directIndexURL = rootURL.appendingPathComponent("index.json")
+    if FileManager.default.fileExists(atPath: directIndexURL.path) {
+        return [directIndexURL]
+    }
+
+    return ((try? FileManager.default.contentsOfDirectory(
+        at: rootURL,
+        includingPropertiesForKeys: nil
+    )) ?? [])
+    .map { $0.appendingPathComponent("index.json") }
+    .filter { FileManager.default.fileExists(atPath: $0.path) }
+    .sorted { $0.path < $1.path }
 }

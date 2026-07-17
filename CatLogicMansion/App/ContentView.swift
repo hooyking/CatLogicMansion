@@ -57,11 +57,10 @@ struct ContentView: View {
 
                     ToolbarItem(placement: .topBarTrailing) {
                         Menu {
-                            ForEach(1...10, id: \.self) { levelNumber in
-                                let levelId = String(format: "level_%03d", levelNumber)
-                                let isUnlocked = progressStore.isUnlocked(levelNumber: levelNumber)
+                            ForEach(LevelLoader.availableLevelIds(), id: \.self) { levelId in
+                                let isUnlocked = progressStore.isUnlocked(levelId: levelId, in: LevelLoader.availableLevelIds())
 
-                                Button(L10n.tr("level.\(String(format: "%03d", levelNumber)).name")) {
+                                Button(levelTitle(for: levelId)) {
                                     if isUnlocked {
                                         selectedLevelId = levelId
                                     }
@@ -129,6 +128,14 @@ struct ContentView: View {
         return L10n.tr("level.\(String(format: "%03d", levelNumber)).name")
     }
 
+    private func levelTitle(for levelId: String) -> String {
+        guard let levelNumber = Int(levelId.replacingOccurrences(of: "level_", with: "")) else {
+            return L10n.tr("app.name")
+        }
+
+        return L10n.tr("level.\(String(format: "%03d", levelNumber)).name")
+    }
+
     private var navigationTitle: String {
         switch screen {
         case .menu:
@@ -149,12 +156,7 @@ struct ContentView: View {
     }
 
     private func goToNextLevel() {
-        guard let currentNumber = Int(selectedLevelId.replacingOccurrences(of: "level_", with: "")) else {
-            return
-        }
-
-        let nextNumber = min(currentNumber + 1, 10)
-        selectedLevelId = String(format: "level_%03d", nextNumber)
+        selectedLevelId = LevelLoader.nextLevelId(after: selectedLevelId)
         screen = .game
     }
 

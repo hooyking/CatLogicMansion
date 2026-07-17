@@ -64,9 +64,45 @@ struct LevelSolverTests {
 
         #expect(failures.isEmpty, Comment(rawValue: "Levels without 3-star route: \(failures.joined(separator: ", "))"))
     }
+
+    @Test("chapter one finale levels require longer three-star routes")
+    func chapterOneFinaleLevelsRequireLongerThreeStarRoutes() throws {
+        let shortRoutes = solveChapterOneLevelResults(goal: .threeStar, levelIds: Set((11...15).map { String(format: "level_%03d", $0) }))
+            .compactMap { result -> String? in
+                guard let moves = result.moves, moves < 32 else { return nil }
+                return "\(result.fileName): \(moves) moves"
+            }
+
+        #expect(shortRoutes.isEmpty, Comment(rawValue: "Finale levels are too short: \(shortRoutes.joined(separator: ", "))"))
+    }
+
+    @Test("chapter one finale three-star routes use every placed mechanic")
+    func chapterOneFinaleThreeStarRoutesUseEveryPlacedMechanic() throws {
+        let failures = try loadChapterOneLevels(levelIds: Set((11...15).map { String(format: "level_%03d", $0) }))
+            .compactMap { level -> String? in
+                guard let solution = LevelSolver.solve(level, goal: .threeStar, maxMoves: 100, maxStates: 500_000) else {
+                    return "\(level.id): no 3-star route"
+                }
+
+                let audit = auditMechanics(level: level, moves: solution.moves)
+                let issues = requiredMechanicIssues(level: level, audit: audit)
+                guard issues.isEmpty else {
+                    return "\(level.id): \(issues.joined(separator: ", "))"
+                }
+
+                return nil
+            }
+
+        #expect(failures.isEmpty, Comment(rawValue: "Unused finale mechanics: \(failures.joined(separator: "; "))"))
+    }
 }
 
-private func solveChapterOneLevels(goal: LevelSolveGoal) -> [String] {
+private struct ChapterOneSolveResult {
+    let fileName: String
+    let moves: Int?
+}
+
+private func solveChapterOneLevelResults(goal: LevelSolveGoal, levelIds: Set<String>? = nil) -> [ChapterOneSolveResult] {
         let root = URL(fileURLWithPath: FileManager.default.currentDirectoryPath)
         let levelDirectory = root.appendingPathComponent("CatLogicMansion/GameData/Levels/chapter_01")
         let levelURLs = (try? FileManager.default
@@ -75,21 +111,122 @@ private func solveChapterOneLevels(goal: LevelSolveGoal) -> [String] {
             .sorted { $0.lastPathComponent < $1.lastPathComponent }) ?? []
 
         let decoder = JSONDecoder()
-        var failures: [String] = []
+        var results: [ChapterOneSolveResult] = []
 
         for url in levelURLs {
+            let fileName = url.lastPathComponent
             guard let level = try? decoder.decode(Level.self, from: Data(contentsOf: url)) else {
-                failures.append(url.lastPathComponent)
+                results.append(ChapterOneSolveResult(fileName: fileName, moves: nil))
                 continue
             }
 
-            if LevelSolver.solve(level, goal: goal, maxMoves: 80) == nil {
-                failures.append(url.lastPathComponent)
+            guard levelIds?.contains(level.id) ?? true else {
+                continue
             }
+
+            let solution = LevelSolver.solve(level, goal: goal, maxMoves: 100, maxStates: 500_000)
+            results.append(ChapterOneSolveResult(fileName: fileName, moves: solution?.moves.count))
         }
 
-        return failures
+        return results
     }
+
+private func solveChapterOneLevels(goal: LevelSolveGoal) -> [String] {
+    solveChapterOneLevelResults(goal: goal, levelIds: nil)
+        .filter { $0.moves == nil }
+        .map(\.fileName)
+    }
+
+private func loadChapterOneLevels(levelIds: Set<String>) throws -> [Level] {
+    let root = URL(fileURLWithPath: FileManager.default.currentDirectoryPath)
+    let levelDirectory = root.appendingPathComponent("CatLogicMansion/GameData/Levels/chapter_01")
+    let levelURLs = try FileManager.default
+        .contentsOfDirectory(at: levelDirectory, includingPropertiesForKeys: nil)
+        .filter { $0.lastPathComponent.hasPrefix("level_") && $0.pathExtension == "json" }
+        .sorted { $0.lastPathComponent < $1.lastPathComponent }
+    let decoder = JSONDecoder()
+
+    return try levelURLs
+        .map { try decoder.decode(Level.self, from: Data(contentsOf: $0)) }
+        .filter { levelIds.contains($0.id) }
+}
+
+private struct MechanicAudit {
+    var movedBoxIds = Set<String>()
+    var collectedKeyIds = Set<String>()
+    var pressedButtonIds = Set<String>()
+    var enabledTargetIds = Set<String>()
+    var crossedBridgeIds = Set<String>()
+}
+
+private func auditMechanics(level: Level, moves: [MoveDirection]) -> MechanicAudit {
+    var engine = GameEngine(level: level)
+    var audit = MechanicAudit()
+    var previousBoxPositions = Dictionary(
+        uniqueKeysWithValues: engine.objects
+            .filter { $0.type == "box" }
+            .map { ($0.id, $0.position) }
+    )
+
+    for move in moves {
+        _ = engine.move(move)
+
+        for object in engine.objects {
+            switch object.type {
+            case "box":
+                if previousBoxPositions[object.id] != object.position {
+                    audit.movedBoxIds.insert(object.id)
+                    previousBoxPositions[object.id] = object.position
+                }
+            case "key":
+                if engine.heldKeyIds.contains(object.id) {
+                    audit.collectedKeyIds.insert(object.id)
+                }
+            case "button":
+                if engine.isButtonPressed(object) {
+                    audit.pressedButtonIds.insert(object.id)
+                }
+            case "door", "bridge":
+                if engine.isTargetEnabled(id: object.id) {
+                    audit.enabledTargetIds.insert(object.id)
+                }
+
+                if object.type == "bridge", engine.playerPosition == object.position {
+                    audit.crossedBridgeIds.insert(object.id)
+                }
+            default:
+                break
+            }
+        }
+    }
+
+    return audit
+}
+
+private func requiredMechanicIssues(level: Level, audit: MechanicAudit) -> [String] {
+    var issues: [String] = []
+
+    for object in level.objects {
+        switch object.type {
+        case "box" where !audit.movedBoxIds.contains(object.id):
+            issues.append("\(object.id) was not moved")
+        case "key" where !audit.collectedKeyIds.contains(object.id):
+            issues.append("\(object.id) was not collected")
+        case "button" where !audit.pressedButtonIds.contains(object.id):
+            issues.append("\(object.id) was not pressed")
+        case "door" where !audit.enabledTargetIds.contains(object.id):
+            issues.append("\(object.id) was not opened")
+        case "bridge" where !audit.enabledTargetIds.contains(object.id):
+            issues.append("\(object.id) was not enabled")
+        case "bridge" where !audit.crossedBridgeIds.contains(object.id):
+            issues.append("\(object.id) was not crossed")
+        default:
+            break
+        }
+    }
+
+    return issues
+}
 
 private func makeSolverLevel(
     targetSteps: Int = 10,

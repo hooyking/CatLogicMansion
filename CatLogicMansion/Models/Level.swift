@@ -25,6 +25,13 @@ public struct Level: Decodable {
     }
 }
 
+public struct ChapterIndex: Decodable {
+    public let chapterId: String
+    public let titleKey: String
+    public let subtitleKey: String
+    public let levels: [String]
+}
+
 public struct LevelPlayer: Decodable {
     let x: Int
     let y: Int

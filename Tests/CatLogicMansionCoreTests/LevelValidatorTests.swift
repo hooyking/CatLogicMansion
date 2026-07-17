@@ -84,6 +84,8 @@ struct LevelValidatorTests {
     func currentChapterOneJSONLevelsAreStructurallyValid() throws {
         let root = URL(fileURLWithPath: FileManager.default.currentDirectoryPath)
         let levelDirectory = root.appendingPathComponent("CatLogicMansion/GameData/Levels/chapter_01")
+        let indexURL = levelDirectory.appendingPathComponent("index.json")
+        let index = try JSONDecoder().decode(ChapterIndex.self, from: Data(contentsOf: indexURL))
         let levelURLs = try FileManager.default
             .contentsOfDirectory(at: levelDirectory, includingPropertiesForKeys: nil)
             .filter { $0.lastPathComponent.hasPrefix("level_") && $0.pathExtension == "json" }
@@ -101,7 +103,8 @@ struct LevelValidatorTests {
             }
         }
 
-        #expect(levelURLs.count == 10)
+        #expect(index.levels.count == 15)
+        #expect(levelURLs.map(\.lastPathComponent) == index.levels)
         #expect(failures.isEmpty, Comment(rawValue: failures.joined(separator: "\n")))
     }
 

@@ -5,13 +5,10 @@ let rootPath = CommandLine.arguments.dropFirst().first ?? "CatLogicMansion/GameD
 let rootURL = URL(fileURLWithPath: rootPath, relativeTo: URL(fileURLWithPath: FileManager.default.currentDirectoryPath))
 let decoder = JSONDecoder()
 
-let levelURLs = (FileManager.default.enumerator(at: rootURL, includingPropertiesForKeys: nil)?
-    .compactMap { $0 as? URL }
-    .filter { $0.lastPathComponent.hasPrefix("level_") && $0.pathExtension == "json" }
-    .sorted { $0.path < $1.path }) ?? []
+let levelURLs = indexedLevelURLs(rootURL: rootURL)
 
 guard !levelURLs.isEmpty else {
-    fputs("No level JSON files found under \(rootURL.path)\n", stderr)
+    fputs("No indexed level JSON files found under \(rootURL.path)\n", stderr)
     exit(1)
 }
 
@@ -44,3 +41,32 @@ if failureCount > 0 {
 }
 
 print("\nValidated \(levelURLs.count) level file(s).")
+
+private func indexedLevelURLs(rootURL: URL) -> [URL] {
+    let chapterURLs = chapterIndexURLs(rootURL: rootURL)
+
+    return chapterURLs.flatMap { indexURL -> [URL] in
+        do {
+            let index = try decoder.decode(ChapterIndex.self, from: Data(contentsOf: indexURL))
+            let chapterDirectory = indexURL.deletingLastPathComponent()
+            return index.levels.map { chapterDirectory.appendingPathComponent($0) }
+        } catch {
+            return []
+        }
+    }
+}
+
+private func chapterIndexURLs(rootURL: URL) -> [URL] {
+    let directIndexURL = rootURL.appendingPathComponent("index.json")
+    if FileManager.default.fileExists(atPath: directIndexURL.path) {
+        return [directIndexURL]
+    }
+
+    return ((try? FileManager.default.contentsOfDirectory(
+        at: rootURL,
+        includingPropertiesForKeys: nil
+    )) ?? [])
+    .map { $0.appendingPathComponent("index.json") }
+    .filter { FileManager.default.fileExists(atPath: $0.path) }
+    .sorted { $0.path < $1.path }
+}

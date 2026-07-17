@@ -4,6 +4,8 @@ struct LevelSelectView: View {
     @ObservedObject var progressStore: ProgressStore
     let onSelectLevel: (String) -> Void
 
+    private let levelIds = LevelLoader.availableLevelIds()
+
     private let columns = [
         GridItem(.adaptive(minimum: 96), spacing: 16)
     ]
@@ -17,10 +19,10 @@ struct LevelSelectView: View {
                     heroHeader
 
                     LazyVGrid(columns: columns, spacing: 16) {
-                        ForEach(1...10, id: \.self) { levelNumber in
-                            let levelId = String(format: "level_%03d", levelNumber)
+                        ForEach(Array(levelIds.enumerated()), id: \.element) { offset, levelId in
+                            let levelNumber = offset + 1
                             let progress = progressStore.progress(for: levelId)
-                            let isUnlocked = progressStore.isUnlocked(levelNumber: levelNumber)
+                            let isUnlocked = progressStore.isUnlocked(levelId: levelId, in: levelIds)
 
                             Button {
                                 guard isUnlocked else {
@@ -83,7 +85,7 @@ struct LevelSelectView: View {
                 Label(L10n.tr("level_select.offline"), systemImage: "wifi.slash")
                 Label(L10n.tr("level_select.no_ads"), systemImage: "sparkles")
                 Label(
-                    "\(progressStore.totalStars)/30 \(L10n.tr("level_select.stars_suffix"))",
+                    "\(progressStore.totalStars)/\(levelIds.count * 3) \(L10n.tr("level_select.stars_suffix"))",
                     systemImage: "star.fill"
                 )
             }

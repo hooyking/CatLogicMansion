@@ -23,6 +23,19 @@ final class ProgressStore: ObservableObject {
         return progressByLevelId[previousLevelId] != nil
     }
 
+    func isUnlocked(levelId: String, in levelIds: [String]) -> Bool {
+        guard let index = levelIds.firstIndex(of: levelId) else {
+            return false
+        }
+
+        guard index > levelIds.startIndex else {
+            return true
+        }
+
+        let previousLevelId = levelIds[levelIds.index(before: index)]
+        return progressByLevelId[previousLevelId] != nil
+    }
+
     var totalStars: Int {
         progressByLevelId.values.reduce(0) { partialResult, progress in
             partialResult + progress.stars

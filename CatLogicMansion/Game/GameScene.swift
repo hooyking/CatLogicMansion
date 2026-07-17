@@ -8,12 +8,15 @@ final class GameScene: SKScene {
     var onAudioFeedback: ((AudioFeedback) -> Void)?
 
     private let level: Level
-    private let tileSize: CGFloat = 48
+    private let maximumTileSize: CGFloat = 48
     private var playerNode = SKNode()
     private let roomTheme: RoomTheme
     private var engine: GameEngine
     private var touchStart: CGPoint?
     private var textureCache: [String: SKTexture] = [:]
+    private var tileSize: CGFloat {
+        currentTileSize
+    }
 
     init(level: Level) {
         self.level = level
@@ -542,6 +545,7 @@ final class GameScene: SKScene {
     }
 
     private func point(for position: GridPosition) -> CGPoint {
+        let tileSize = currentTileSize
         let boardWidth = CGFloat(level.width) * tileSize
         let boardHeight = CGFloat(level.height) * tileSize
         let originX = (size.width - boardWidth) / 2 + tileSize / 2
@@ -554,6 +558,7 @@ final class GameScene: SKScene {
     }
 
     private var boardRect: CGRect {
+        let tileSize = currentTileSize
         let boardWidth = CGFloat(level.width) * tileSize
         let boardHeight = CGFloat(level.height) * tileSize
         let originX = (size.width - boardWidth) / 2
@@ -563,6 +568,7 @@ final class GameScene: SKScene {
     }
 
     private func gridPosition(for point: CGPoint) -> GridPosition {
+        let tileSize = currentTileSize
         let boardWidth = CGFloat(level.width) * tileSize
         let boardHeight = CGFloat(level.height) * tileSize
         let originX = (size.width - boardWidth) / 2
@@ -572,6 +578,20 @@ final class GameScene: SKScene {
         let y = level.height - 1 - invertedY
 
         return GridPosition(x: x, y: y)
+    }
+
+    private var currentTileSize: CGFloat {
+        guard size.width > 0, size.height > 0 else {
+            return maximumTileSize
+        }
+
+        let boardChromePadding: CGFloat = 34
+        let availableWidth = max(size.width - boardChromePadding, 1)
+        let availableHeight = max(size.height - boardChromePadding, 1)
+        let widthFit = availableWidth / CGFloat(level.width)
+        let heightFit = availableHeight / CGFloat(level.height)
+
+        return min(maximumTileSize, widthFit, heightFit)
     }
 }
 
