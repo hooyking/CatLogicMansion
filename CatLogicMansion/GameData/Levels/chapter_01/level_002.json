@@ -1,0 +1,31 @@
+{
+  "id": "level_002",
+  "chapterId": "chapter_01",
+  "nameKey": "level.002.name",
+  "tutorialKey": "tutorial.avoid_walls",
+  "width": 7,
+  "height": 8,
+  "targetSteps": 13,
+  "player": {
+    "x": 1,
+    "y": 6,
+    "direction": "right"
+  },
+  "exit": {
+    "id": "exit_002",
+    "x": 5,
+    "y": 1,
+    "locked": false
+  },
+  "tiles": [
+    "#######",
+    "#.....#",
+    "#.###.#",
+    "#...#.#",
+    "###.#.#",
+    "#.....#",
+    "#.....#",
+    "#######"
+  ],
+  "objects": []
+}

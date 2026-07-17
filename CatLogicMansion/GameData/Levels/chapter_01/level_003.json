@@ -1,0 +1,46 @@
+{
+  "id": "level_003",
+  "chapterId": "chapter_01",
+  "nameKey": "level.003.name",
+  "tutorialKey": "tutorial.collect_fish",
+  "width": 7,
+  "height": 8,
+  "targetSteps": 17,
+  "player": {
+    "x": 1,
+    "y": 6,
+    "direction": "up"
+  },
+  "exit": {
+    "id": "exit_003",
+    "x": 5,
+    "y": 1,
+    "locked": false
+  },
+  "tiles": [
+    "#######",
+    "#.....#",
+    "#.###.#",
+    "#.....#",
+    "#.###.#",
+    "#.....#",
+    "#.....#",
+    "#######"
+  ],
+  "objects": [
+    {
+      "id": "fish_001",
+      "type": "collectible",
+      "subtype": "fish",
+      "x": 1,
+      "y": 1
+    },
+    {
+      "id": "fish_002",
+      "type": "collectible",
+      "subtype": "fish",
+      "x": 5,
+      "y": 6
+    }
+  ]
+}

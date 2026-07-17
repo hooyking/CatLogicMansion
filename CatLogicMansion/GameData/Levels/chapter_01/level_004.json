@@ -1,0 +1,47 @@
+{
+  "id": "level_004",
+  "chapterId": "chapter_01",
+  "nameKey": "level.004.name",
+  "tutorialKey": "tutorial.collect_key",
+  "width": 7,
+  "height": 8,
+  "targetSteps": 18,
+  "player": {
+    "x": 1,
+    "y": 6,
+    "direction": "up"
+  },
+  "exit": {
+    "id": "exit_004",
+    "x": 5,
+    "y": 1,
+    "locked": true,
+    "unlockBy": "key_gold_001"
+  },
+  "tiles": [
+    "#######",
+    "#.....#",
+    "#.###.#",
+    "#.#...#",
+    "#.#.###",
+    "#.....#",
+    "#.....#",
+    "#######"
+  ],
+  "objects": [
+    {
+      "id": "key_gold_001",
+      "type": "key",
+      "subtype": "gold",
+      "x": 1,
+      "y": 1
+    },
+    {
+      "id": "fish_003",
+      "type": "collectible",
+      "subtype": "fish",
+      "x": 5,
+      "y": 5
+    }
+  ]
+}

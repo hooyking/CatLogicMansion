@@ -1,0 +1,63 @@
+{
+  "id": "level_007",
+  "chapterId": "chapter_01",
+  "nameKey": "level.007.name",
+  "tutorialKey": "tutorial.temporary_button",
+  "width": 7,
+  "height": 8,
+  "targetSteps": 17,
+  "player": {
+    "x": 1,
+    "y": 6,
+    "direction": "up"
+  },
+  "exit": {
+    "id": "exit_007",
+    "x": 5,
+    "y": 1,
+    "locked": true,
+    "unlockBy": "door_002"
+  },
+  "tiles": [
+    "#######",
+    "#.....#",
+    "#.###.#",
+    "#.#...#",
+    "#.#.#.#",
+    "#...#.#",
+    "#.....#",
+    "#######"
+  ],
+  "objects": [
+    {
+      "id": "door_002",
+      "type": "door",
+      "x": 5,
+      "y": 2,
+      "locked": true
+    },
+    {
+      "id": "button_002",
+      "type": "button",
+      "x": 1,
+      "y": 3,
+      "targetIds": [
+        "door_002"
+      ],
+      "holdMode": "temporary"
+    },
+    {
+      "id": "fish_005",
+      "type": "collectible",
+      "subtype": "fish",
+      "x": 5,
+      "y": 6
+    },
+    {
+      "id": "box_007",
+      "type": "box",
+      "x": 1,
+      "y": 4
+    }
+  ]
+}
