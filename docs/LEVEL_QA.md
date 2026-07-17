@@ -28,8 +28,13 @@ PASS level_012.json
 PASS level_013.json
 PASS level_014.json
 PASS level_015.json
+PASS level_016.json
+PASS level_017.json
+PASS level_018.json
+PASS level_019.json
+PASS level_020.json
 
-Validated 15 level file(s).
+Validated 20 level file(s).
 ```
 
 The validator checks:
@@ -99,11 +104,26 @@ PASS level_014.json
 PASS level_015.json
   clear: 17 moves, 2 star(s)
   3-star: 45 moves, 3 star(s)
+PASS level_016.json
+  clear: 26 moves, 2 star(s)
+  3-star: 34 moves, 3 star(s)
+PASS level_017.json
+  clear: 26 moves, 2 star(s)
+  3-star: 46 moves, 3 star(s)
+PASS level_018.json
+  clear: 17 moves, 2 star(s)
+  3-star: 37 moves, 3 star(s)
+PASS level_019.json
+  clear: 22 moves, 2 star(s)
+  3-star: 36 moves, 3 star(s)
+PASS level_020.json
+  clear: 17 moves, 2 star(s)
+  3-star: 45 moves, 3 star(s)
 
-Solved 15 level file(s).
+Solved 20 level file(s).
 ```
 
-This proves the current levels have at least one clear route and one 3-star route through the real `GameEngine` rules. Some fastest clear routes are 2-star routes because they skip optional collectibles. Levels 11-15 also have a regression test that rejects 3-star routes under 32 moves and verifies every placed mechanic object is used by the 3-star route.
+This proves the current indexed levels have at least one clear route and one 3-star route through the real `GameEngine` rules. Some fastest clear routes are 2-star routes because they skip optional collectibles. Levels 11-20 also have a regression test that rejects 3-star routes under 32 moves and verifies every placed mechanic object is used by the 3-star route.
 
 ## Manual Playtest Matrix
 
@@ -129,6 +149,11 @@ The game board now scales tile size to fit the visible `SpriteView`, so wider or
 | level_013 | Button hold | Pass | Pass | 3 | Pass | Pass | Scripted simulator 3-star: 37 moves; compact board keeps larger tiles while requiring box-held button and collection backtracking |
 | level_014 | Long gallery | Pass | Pass | 3 | Pass | Pass | Scripted simulator 3-star: 36 moves; key, box/button door, and long route collection verified |
 | level_015 | Foyer finale | Pass | Pass | 3 | Pass | Pass | Scripted simulator 3-star: 45 moves; box/button gate, bridge, door, key, and finale route verified |
+| level_016 | Shelf switch | Pass | Pass | 3 | Needs human pass | Needs human pass | Chapter 2 entry; automated 3-star: 34 moves |
+| level_017 | Carpet bridge | Pass | Pass | 3 | Needs human pass | Needs human pass | Chapter 2 bridge/key loop; automated 3-star: 46 moves |
+| level_018 | Quiet button | Pass | Pass | 3 | Needs human pass | Needs human pass | Compact box-held button route; automated 3-star: 37 moves |
+| level_019 | Reading loop | Pass | Pass | 3 | Needs human pass | Needs human pass | Chapter 2 long loop; automated 3-star: 36 moves |
+| level_020 | Library review | Pass | Pass | 3 | Needs human pass | Needs human pass | Chapter 2 review route; automated 3-star: 45 moves |
 
 ## Scripted 3-Star Routes
 
@@ -145,10 +170,15 @@ The game board now scales tile size to fit the visible `SpriteView`, so wider or
 | level_013 | 37 | up up up up down right left down down right right right right right right right right up up up up left left left left left left left right right right right right right right up up |
 | level_014 | 36 | left left left left left left left left up up right right right right right left left left up up left left up up down down right right right right right right right right up up |
 | level_015 | 45 | right right right right right right right right up left left left left left left left left up up up up up up down down down down right right right right right left up up left left right right right right right right up up |
+| level_016 | 34 | up up right right right right right right left left left left left left up up right right right right right right right right down down down down up up up up up up |
+| level_017 | 46 | right right right right right right right right left left left left left left left left up up right right right right right right left left up up left left left left up up down down right right right right right right right right up up |
+| level_018 | 37 | up up up up down right left down down right right right right right right right right up up up up left left left left left left left right right right right right right right up up |
+| level_019 | 36 | left left left left left left left left up up right right right right right left left left up up left left up up down down right right right right right right right right up up |
+| level_020 | 45 | right right right right right right right right up left left left left left left left left up up up up up up down down down down right right right right right left up up left left right right right right right right up up |
 
 ## Next QA Step
 
-Do one human-play pass for levels 11-15 after this expansion, then record richer playtest notes:
+Do one human-play pass for levels 16-20 after this expansion, then record richer playtest notes:
 
 - First successful completion moves.
 - Best known 3-star moves.

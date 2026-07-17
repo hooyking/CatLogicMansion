@@ -8,7 +8,7 @@
 - 主菜单入口
 - SwiftUI 承载 SpriteKit 游戏棋盘
 - JSON 关卡加载
-- 15 个 Chapter 1 关卡 JSON 已打包进 App bundle
+- 20 个关卡 JSON 已打包进 App bundle
 - 滑动移动
 - 点击相邻格移动
 - 墙体阻挡
@@ -85,13 +85,13 @@ xcodebuild -project CatLogicMansion.xcodeproj \
 - 撤销与重置
 - 结算星级
 
-第 1 到第 15 关已可加载、渲染并使用同一套核心规则运行。关卡选择、游戏内关卡菜单和下一关跳转已改为读取 `chapter_01/index.json`。
+第 1 到第 20 关已可加载、渲染并使用同一套核心规则运行。关卡选择、游戏内关卡菜单和下一关跳转已改为读取各章节 `index.json`，当前包含 Chapter 1 全 15 关与 Chapter 2 前 5 关。
 
 ## 下一步建议
 
-1. 对第 11 到第 15 关做一次人工试玩复核，重点记录真实完成步数、软锁风险、教程可读性和节奏问题。
-2. 根据真机试听结果微调音效音量、长度和背景音乐循环感。
-3. 开始 Chapter 2 关卡设计，优先扩展箱子、按钮、门、桥的组合，再考虑镜子光线。
+1. 对第 16 到第 20 关做一次人工试玩复核，重点记录真实完成步数、软锁风险、教程可读性和节奏问题。
+2. 为 Chapter 2 增加书房/地毯视觉主题，让它与 Chapter 1 在画面上明显区分。
+3. 继续扩展 Chapter 2 到 30 关，优先扩展箱子、按钮、门、桥的组合，再考虑镜子光线。
 4. 为 60 关首发内容建立关卡编辑、截图、校验和求解的固定流程。
 
 ## 测试与覆盖率
@@ -113,8 +113,8 @@ xcrun llvm-cov report .build/arm64-apple-macosx/debug/CatLogicMansionCorePackage
 
 当前核心代码覆盖率：
 
-- Line coverage: 94.66%
-- Function coverage: 91.72%
+- Line coverage: 94.74%
+- Function coverage: 92.94%
 
 ## 关卡校验
 
@@ -124,7 +124,7 @@ xcrun llvm-cov report .build/arm64-apple-macosx/debug/CatLogicMansionCorePackage
 swift run validate-levels
 ```
 
-当前 15 个 Chapter 1 关卡均通过结构校验。人工试玩记录见 `docs/LEVEL_QA.md`。
+当前 20 个索引关卡均通过结构校验。人工试玩记录见 `docs/LEVEL_QA.md`。
 
 ## 自动解法校验
 
@@ -134,11 +134,12 @@ swift run validate-levels
 swift run solve-levels
 ```
 
-当前 15 个 Chapter 1 关卡均存在通关路线和 3 星路线。工具会同时打印最快通关路线与 3 星路线；部分关卡的最快通关路线不是 3 星，因为它会跳过可选收集物。
+当前 20 个索引关卡均存在通关路线和 3 星路线。工具会同时打印最快通关路线与 3 星路线；部分关卡的最快通关路线不是 3 星，因为它会跳过可选收集物。
 
 第 5 到第 10 关已做第一轮加难：箱子、按钮、桥、门、钥匙和路线规划在三星路线中承担更明确的作用。
 第 5 到第 10 关已通过脚本化模拟器三星回放，截图证据位于 `docs/level_qa/scripted_replay/contact_sheet.png`。
 第 11 到第 15 关补齐 Chapter 1，并已调高为第一章压轴段：最短三星路线为 34 到 46 步，测试会阻止这些关卡回退到低于 32 步的过短三星路线，并验证三星路线必须使用关卡里出现的机制道具。脚本化模拟器三星回放截图证据位于 `docs/level_qa/chapter_01_15/contact_sheet.png`。
+第 16 到第 20 关已进入 Chapter 2：继续使用箱子、按钮、门、桥和钥匙组合，作为天鹅绒图书馆机制扩展的第一批关卡。
 
 ## 音频素材
 

@@ -51,23 +51,23 @@ struct LevelSolverTests {
         #expect(solution?.moves == [.right, .right])
     }
 
-    @Test("current chapter one JSON levels have a clear route")
-    func currentChapterOneJSONLevelsHaveClearRoute() throws {
-        let failures = solveChapterOneLevels(goal: .clear)
+    @Test("current indexed JSON levels have a clear route")
+    func currentIndexedJSONLevelsHaveClearRoute() throws {
+        let failures = solveIndexedLevels(goal: .clear)
 
         #expect(failures.isEmpty, Comment(rawValue: "Unsolvable levels: \(failures.joined(separator: ", "))"))
     }
 
-    @Test("current chapter one JSON levels have a three-star route")
-    func currentChapterOneJSONLevelsHaveThreeStarRoute() throws {
-        let failures = solveChapterOneLevels(goal: .threeStar)
+    @Test("current indexed JSON levels have a three-star route")
+    func currentIndexedJSONLevelsHaveThreeStarRoute() throws {
+        let failures = solveIndexedLevels(goal: .threeStar)
 
         #expect(failures.isEmpty, Comment(rawValue: "Levels without 3-star route: \(failures.joined(separator: ", "))"))
     }
 
-    @Test("chapter one finale levels require longer three-star routes")
-    func chapterOneFinaleLevelsRequireLongerThreeStarRoutes() throws {
-        let shortRoutes = solveChapterOneLevelResults(goal: .threeStar, levelIds: Set((11...15).map { String(format: "level_%03d", $0) }))
+    @Test("advanced indexed levels require longer three-star routes")
+    func advancedIndexedLevelsRequireLongerThreeStarRoutes() throws {
+        let shortRoutes = solveIndexedLevelResults(goal: .threeStar, levelIds: Set((11...20).map { String(format: "level_%03d", $0) }))
             .compactMap { result -> String? in
                 guard let moves = result.moves, moves < 32 else { return nil }
                 return "\(result.fileName): \(moves) moves"
@@ -76,9 +76,9 @@ struct LevelSolverTests {
         #expect(shortRoutes.isEmpty, Comment(rawValue: "Finale levels are too short: \(shortRoutes.joined(separator: ", "))"))
     }
 
-    @Test("chapter one finale three-star routes use every placed mechanic")
-    func chapterOneFinaleThreeStarRoutesUseEveryPlacedMechanic() throws {
-        let failures = try loadChapterOneLevels(levelIds: Set((11...15).map { String(format: "level_%03d", $0) }))
+    @Test("advanced three-star routes use every placed mechanic")
+    func advancedThreeStarRoutesUseEveryPlacedMechanic() throws {
+        let failures = try loadIndexedLevels(levelIds: Set((11...20).map { String(format: "level_%03d", $0) }))
             .compactMap { level -> String? in
                 guard let solution = LevelSolver.solve(level, goal: .threeStar, maxMoves: 100, maxStates: 500_000) else {
                     return "\(level.id): no 3-star route"
@@ -97,51 +97,57 @@ struct LevelSolverTests {
     }
 }
 
-private struct ChapterOneSolveResult {
+private struct IndexedSolveResult {
     let fileName: String
     let moves: Int?
 }
 
-private func solveChapterOneLevelResults(goal: LevelSolveGoal, levelIds: Set<String>? = nil) -> [ChapterOneSolveResult] {
-        let root = URL(fileURLWithPath: FileManager.default.currentDirectoryPath)
-        let levelDirectory = root.appendingPathComponent("CatLogicMansion/GameData/Levels/chapter_01")
-        let levelURLs = (try? FileManager.default
-            .contentsOfDirectory(at: levelDirectory, includingPropertiesForKeys: nil)
-            .filter { $0.lastPathComponent.hasPrefix("level_") && $0.pathExtension == "json" }
-            .sorted { $0.lastPathComponent < $1.lastPathComponent }) ?? []
+private func solveIndexedLevelResults(goal: LevelSolveGoal, levelIds: Set<String>? = nil) -> [IndexedSolveResult] {
+    let root = URL(fileURLWithPath: FileManager.default.currentDirectoryPath)
+    let levelsDirectory = root.appendingPathComponent("CatLogicMansion/GameData/Levels")
+    let levelURLs = (try? FileManager.default
+        .contentsOfDirectory(at: levelsDirectory, includingPropertiesForKeys: nil)
+        .flatMap { chapterURL in
+            try FileManager.default.contentsOfDirectory(at: chapterURL, includingPropertiesForKeys: nil)
+        }
+        .filter { $0.lastPathComponent.hasPrefix("level_") && $0.pathExtension == "json" }
+        .sorted { $0.lastPathComponent < $1.lastPathComponent }) ?? []
 
-        let decoder = JSONDecoder()
-        var results: [ChapterOneSolveResult] = []
+    let decoder = JSONDecoder()
+    var results: [IndexedSolveResult] = []
 
-        for url in levelURLs {
-            let fileName = url.lastPathComponent
-            guard let level = try? decoder.decode(Level.self, from: Data(contentsOf: url)) else {
-                results.append(ChapterOneSolveResult(fileName: fileName, moves: nil))
-                continue
-            }
-
-            guard levelIds?.contains(level.id) ?? true else {
-                continue
-            }
-
-            let solution = LevelSolver.solve(level, goal: goal, maxMoves: 100, maxStates: 500_000)
-            results.append(ChapterOneSolveResult(fileName: fileName, moves: solution?.moves.count))
+    for url in levelURLs {
+        let fileName = url.lastPathComponent
+        guard let level = try? decoder.decode(Level.self, from: Data(contentsOf: url)) else {
+            results.append(IndexedSolveResult(fileName: fileName, moves: nil))
+            continue
         }
 
-        return results
+        guard levelIds?.contains(level.id) ?? true else {
+            continue
+        }
+
+        let solution = LevelSolver.solve(level, goal: goal, maxMoves: 100, maxStates: 500_000)
+        results.append(IndexedSolveResult(fileName: fileName, moves: solution?.moves.count))
     }
 
-private func solveChapterOneLevels(goal: LevelSolveGoal) -> [String] {
-    solveChapterOneLevelResults(goal: goal, levelIds: nil)
+    return results
+}
+
+private func solveIndexedLevels(goal: LevelSolveGoal) -> [String] {
+    solveIndexedLevelResults(goal: goal, levelIds: nil)
         .filter { $0.moves == nil }
         .map(\.fileName)
-    }
+}
 
-private func loadChapterOneLevels(levelIds: Set<String>) throws -> [Level] {
+private func loadIndexedLevels(levelIds: Set<String>) throws -> [Level] {
     let root = URL(fileURLWithPath: FileManager.default.currentDirectoryPath)
-    let levelDirectory = root.appendingPathComponent("CatLogicMansion/GameData/Levels/chapter_01")
+    let levelsDirectory = root.appendingPathComponent("CatLogicMansion/GameData/Levels")
     let levelURLs = try FileManager.default
-        .contentsOfDirectory(at: levelDirectory, includingPropertiesForKeys: nil)
+        .contentsOfDirectory(at: levelsDirectory, includingPropertiesForKeys: nil)
+        .flatMap { chapterURL in
+            try FileManager.default.contentsOfDirectory(at: chapterURL, includingPropertiesForKeys: nil)
+        }
         .filter { $0.lastPathComponent.hasPrefix("level_") && $0.pathExtension == "json" }
         .sorted { $0.lastPathComponent < $1.lastPathComponent }
     let decoder = JSONDecoder()

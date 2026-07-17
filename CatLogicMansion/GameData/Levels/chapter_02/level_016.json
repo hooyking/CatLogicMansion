@@ -1,0 +1,78 @@
+{
+  "id": "level_016",
+  "chapterId": "chapter_02",
+  "nameKey": "level.016.name",
+  "tutorialKey": "tutorial.chapter_two_library",
+  "width": 11,
+  "height": 9,
+  "targetSteps": 36,
+  "player": {
+    "x": 1,
+    "y": 7,
+    "direction": "up"
+  },
+  "exit": {
+    "id": "exit_016",
+    "x": 9,
+    "y": 1,
+    "locked": true,
+    "unlockBy": "door_016"
+  },
+  "tiles": [
+    "###########",
+    "#.........#",
+    "#.#######.#",
+    "#.........#",
+    "#.#######.#",
+    "#.........#",
+    "#.#######.#",
+    "#.........#",
+    "###########"
+  ],
+  "objects": [
+    {
+      "id": "door_016",
+      "type": "door",
+      "x": 9,
+      "y": 2,
+      "locked": true
+    },
+    {
+      "id": "button_016",
+      "type": "button",
+      "x": 8,
+      "y": 5,
+      "targetIds": [
+        "door_016"
+      ],
+      "holdMode": "pressed"
+    },
+    {
+      "id": "box_016",
+      "type": "box",
+      "x": 5,
+      "y": 5
+    },
+    {
+      "id": "fish_025",
+      "type": "collectible",
+      "subtype": "fish",
+      "x": 1,
+      "y": 3
+    },
+    {
+      "id": "fish_026",
+      "type": "collectible",
+      "subtype": "fish",
+      "x": 9,
+      "y": 7
+    },
+    {
+      "id": "fish_027",
+      "type": "collectible",
+      "subtype": "fish",
+      "x": 5,
+      "y": 3
+    }
+  ]
+}

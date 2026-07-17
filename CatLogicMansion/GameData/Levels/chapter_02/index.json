@@ -1,0 +1,12 @@
+{
+  "chapterId": "chapter_02",
+  "titleKey": "chapter.library.title",
+  "subtitleKey": "chapter.library.subtitle",
+  "levels": [
+    "level_016.json",
+    "level_017.json",
+    "level_018.json",
+    "level_019.json",
+    "level_020.json"
+  ]
+}

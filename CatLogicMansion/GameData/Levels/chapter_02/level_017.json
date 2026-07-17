@@ -1,0 +1,78 @@
+{
+  "id": "level_017",
+  "chapterId": "chapter_02",
+  "nameKey": "level.017.name",
+  "tutorialKey": "tutorial.chapter_two_library",
+  "width": 11,
+  "height": 9,
+  "targetSteps": 48,
+  "player": {
+    "x": 1,
+    "y": 7,
+    "direction": "right"
+  },
+  "exit": {
+    "id": "exit_017",
+    "x": 9,
+    "y": 1,
+    "locked": true,
+    "unlockBy": "key_gold_017"
+  },
+  "tiles": [
+    "###########",
+    "#.........#",
+    "#.#######.#",
+    "#.........#",
+    "#####.#####",
+    "#.........#",
+    "#.#######.#",
+    "#.........#",
+    "###########"
+  ],
+  "objects": [
+    {
+      "id": "key_gold_017",
+      "type": "key",
+      "subtype": "gold",
+      "x": 1,
+      "y": 1
+    },
+    {
+      "id": "box_017",
+      "type": "box",
+      "x": 5,
+      "y": 5
+    },
+    {
+      "id": "button_017",
+      "type": "button",
+      "x": 8,
+      "y": 5,
+      "targetIds": [
+        "bridge_017"
+      ],
+      "holdMode": "pressed"
+    },
+    {
+      "id": "bridge_017",
+      "type": "bridge",
+      "x": 5,
+      "y": 4,
+      "enabled": false
+    },
+    {
+      "id": "fish_028",
+      "type": "collectible",
+      "subtype": "fish",
+      "x": 9,
+      "y": 7
+    },
+    {
+      "id": "fish_029",
+      "type": "collectible",
+      "subtype": "fish",
+      "x": 9,
+      "y": 3
+    }
+  ]
+}

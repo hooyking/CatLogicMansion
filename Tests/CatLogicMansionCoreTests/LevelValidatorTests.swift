@@ -80,31 +80,45 @@ struct LevelValidatorTests {
         #expect(issues.contains(.missingObjectTarget(sourceId: "button", targetId: "missing_door")))
     }
 
-    @Test("current chapter one JSON levels are structurally valid")
-    func currentChapterOneJSONLevelsAreStructurallyValid() throws {
+    @Test("current indexed JSON levels are structurally valid")
+    func currentIndexedJSONLevelsAreStructurallyValid() throws {
         let root = URL(fileURLWithPath: FileManager.default.currentDirectoryPath)
-        let levelDirectory = root.appendingPathComponent("CatLogicMansion/GameData/Levels/chapter_01")
-        let indexURL = levelDirectory.appendingPathComponent("index.json")
-        let index = try JSONDecoder().decode(ChapterIndex.self, from: Data(contentsOf: indexURL))
-        let levelURLs = try FileManager.default
-            .contentsOfDirectory(at: levelDirectory, includingPropertiesForKeys: nil)
-            .filter { $0.lastPathComponent.hasPrefix("level_") && $0.pathExtension == "json" }
-            .sorted { $0.lastPathComponent < $1.lastPathComponent }
+        let levelsDirectory = root.appendingPathComponent("CatLogicMansion/GameData/Levels")
+        let indexURLs = try FileManager.default
+            .contentsOfDirectory(at: levelsDirectory, includingPropertiesForKeys: nil)
+            .map { $0.appendingPathComponent("index.json") }
+            .filter { FileManager.default.fileExists(atPath: $0.path) }
+            .sorted { $0.path < $1.path }
 
         let decoder = JSONDecoder()
         var failures: [String] = []
+        var indexedLevelCount = 0
 
-        for url in levelURLs {
-            let level = try decoder.decode(Level.self, from: Data(contentsOf: url))
-            let issues = LevelValidator.validate(level)
+        for indexURL in indexURLs {
+            let index = try decoder.decode(ChapterIndex.self, from: Data(contentsOf: indexURL))
+            let levelDirectory = indexURL.deletingLastPathComponent()
+            let levelURLs = try FileManager.default
+                .contentsOfDirectory(at: levelDirectory, includingPropertiesForKeys: nil)
+                .filter { $0.lastPathComponent.hasPrefix("level_") && $0.pathExtension == "json" }
+                .sorted { $0.lastPathComponent < $1.lastPathComponent }
 
-            if !issues.isEmpty {
-                failures.append("\(url.lastPathComponent): \(issues.map(\.description).joined(separator: ", "))")
+            indexedLevelCount += index.levels.count
+            if levelURLs.map(\.lastPathComponent) != index.levels {
+                failures.append("\(indexURL.deletingLastPathComponent().lastPathComponent): index order does not match level files")
+            }
+
+            for url in levelURLs {
+                let level = try decoder.decode(Level.self, from: Data(contentsOf: url))
+                let issues = LevelValidator.validate(level)
+
+                if !issues.isEmpty {
+                    failures.append("\(url.lastPathComponent): \(issues.map(\.description).joined(separator: ", "))")
+                }
             }
         }
 
-        #expect(index.levels.count == 15)
-        #expect(levelURLs.map(\.lastPathComponent) == index.levels)
+        #expect(indexURLs.count == 2)
+        #expect(indexedLevelCount == 20)
         #expect(failures.isEmpty, Comment(rawValue: failures.joined(separator: "\n")))
     }
 

@@ -4,6 +4,7 @@ struct LevelSelectView: View {
     @ObservedObject var progressStore: ProgressStore
     let onSelectLevel: (String) -> Void
 
+    private let chapterIndexes = LevelLoader.loadChapterIndexes()
     private let levelIds = LevelLoader.availableLevelIds()
 
     private let columns = [
@@ -18,31 +19,48 @@ struct LevelSelectView: View {
                 VStack(alignment: .leading, spacing: 22) {
                     heroHeader
 
-                    LazyVGrid(columns: columns, spacing: 16) {
-                        ForEach(Array(levelIds.enumerated()), id: \.element) { offset, levelId in
-                            let levelNumber = offset + 1
-                            let progress = progressStore.progress(for: levelId)
-                            let isUnlocked = progressStore.isUnlocked(levelId: levelId, in: levelIds)
-
-                            Button {
-                                guard isUnlocked else {
-                                    return
-                                }
-
-                                onSelectLevel(levelId)
-                            } label: {
-                                LevelCard(
-                                    levelNumber: levelNumber,
-                                    progress: progress,
-                                    isUnlocked: isUnlocked
-                                )
-                            }
-                            .buttonStyle(.plain)
-                            .disabled(!isUnlocked)
-                        }
+                    ForEach(chapterIndexes, id: \.chapterId) { chapterIndex in
+                        chapterSection(chapterIndex)
                     }
                 }
                 .padding(20)
+            }
+        }
+    }
+
+    private func chapterSection(_ chapterIndex: ChapterIndex) -> some View {
+        VStack(alignment: .leading, spacing: 14) {
+            VStack(alignment: .leading, spacing: 5) {
+                Text(L10n.tr(chapterIndex.titleKey))
+                    .font(.headline.weight(.black))
+                    .foregroundStyle(AppDesign.ColorToken.walnut)
+
+                Text(L10n.tr(chapterIndex.subtitleKey))
+                    .font(.caption.weight(.semibold))
+                    .foregroundStyle(AppDesign.ColorToken.walnut.opacity(0.58))
+            }
+
+            LazyVGrid(columns: columns, spacing: 16) {
+                ForEach(chapterIndex.levels.map { $0.replacingOccurrences(of: ".json", with: "") }, id: \.self) { levelId in
+                    let progress = progressStore.progress(for: levelId)
+                    let isUnlocked = progressStore.isUnlocked(levelId: levelId, in: levelIds)
+
+                    Button {
+                        guard isUnlocked else {
+                            return
+                        }
+
+                        onSelectLevel(levelId)
+                    } label: {
+                        LevelCard(
+                            levelNumber: levelNumber(for: levelId),
+                            progress: progress,
+                            isUnlocked: isUnlocked
+                        )
+                    }
+                    .buttonStyle(.plain)
+                    .disabled(!isUnlocked)
+                }
             }
         }
     }
@@ -96,6 +114,10 @@ struct LevelSelectView: View {
         .background(.ultraThinMaterial)
         .clipShape(RoundedRectangle(cornerRadius: AppDesign.Radius.sheet))
         .shadow(color: AppDesign.Shadow.card, radius: 18, y: 10)
+    }
+
+    private func levelNumber(for levelId: String) -> Int {
+        Int(levelId.replacingOccurrences(of: "level_", with: "")) ?? 0
     }
 }
 
